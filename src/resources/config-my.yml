@@ -1,0 +1,8 @@
+aws:
+  access.key:
+  secret.key:
+  buckets: # comma separated
+
+azure:
+  access.key:
+  storage.accounts: # comma separated

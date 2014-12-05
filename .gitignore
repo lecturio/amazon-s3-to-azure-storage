@@ -1,3 +1,7 @@
 vendor
 *.swp
 *.lock
+*.iml
+.idea
+*.phar
+src/resources/config.yml

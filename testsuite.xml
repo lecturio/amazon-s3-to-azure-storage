@@ -1,0 +1,7 @@
+<phpunit bootstrap="bootstrap.php">
+	<testsuites>
+    		<testsuite name="CloudCopy Suite">
+			<directory suffix=".php">src/CloudCopyTest</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

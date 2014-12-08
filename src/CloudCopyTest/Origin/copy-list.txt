@@ -1,0 +1,2 @@
+old.bucketname/video_640x360_0,6Mbit.mp4
+new-bucketname/video_0,25Mbit_1.mp4

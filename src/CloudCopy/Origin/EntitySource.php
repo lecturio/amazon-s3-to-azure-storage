@@ -7,7 +7,7 @@ namespace CloudCopy\Origin;
  * Interface FileSource
  * @package CloudCopy\Origin
  */
-interface FileSource
+interface EntitySource
 {
-    function retrieveFiles();
+    function retrieve();
 }

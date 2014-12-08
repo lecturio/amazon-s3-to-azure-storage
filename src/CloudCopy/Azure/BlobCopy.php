@@ -1,14 +1,48 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: g
- * Date: 12/8/14
- * Time: 23:00
- */
-
 namespace CloudCopy\Azure;
 
 
-class BlobCopy {
+use CloudCopy\Origin\FileNameBean;
+
+class BlobCopy
+{
+
+    /**
+     * @var \WindowsAzure\Blob\BlobRestProxy
+     */
+    private $client;
+
+    private $config;
+
+    function __construct(StorageClient $client, $config)
+    {
+        $this->client = $client->factory();
+        $this->config = $config;
+    }
+
+    public function copy(FileNameBean $entity)
+    {
+        $destination = sprintf('%s/%s', $this->config['temp.cloud.store'], $entity->getNode());
+        $content = fopen(sprintf('%s/%s', $destination, $entity->getEntity()), 'r');
+
+        $container = $this->config['backups']['aws.to.azure'][$entity->getNode()];
+        $this->client->createBlockBlob($container, $entity->getEntity(), $content);
+    }
+
+    /**
+     * @return \WindowsAzure\Blob\BlobRestProxy
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
 
 }

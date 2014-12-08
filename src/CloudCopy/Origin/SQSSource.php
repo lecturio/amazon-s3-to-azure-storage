@@ -8,7 +8,17 @@
 
 namespace CloudCopy\Origin;
 
+/**
+ * Amazon message queue service
+ *
+ * Class SQSSource
+ * @package CloudCopy\Origin
+ */
+class SQSSource implements FileSource
+{
 
-class SQSSource {
-
+    function retrieveFiles()
+    {
+        // TODO: Implement retrieveFiles() method.
+    }
 }

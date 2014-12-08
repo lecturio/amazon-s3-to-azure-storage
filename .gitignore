@@ -4,4 +4,6 @@ vendor
 *.iml
 .idea
 *.phar
+assets
 src/resources/config.yml
+sourcelist/copy-list.txt

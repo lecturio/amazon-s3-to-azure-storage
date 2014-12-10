@@ -1,6 +1,10 @@
 aws:
   access.key:
   secret.key:
+  sqs.region: sqs.eu-west-1.amazonaws.com
+  sqs.pool.url:
+  sqs.push.url:
+
 
 azure:
   storage.key: ""

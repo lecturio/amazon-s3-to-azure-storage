@@ -60,25 +60,11 @@ class AmazonS3ToAzureStorage
     function execute()
     {
         foreach ($this->entitySource->retrieve() as $entity) {
-            /**
-             * @var $entity FileNameBean
-             */
-            $entity->getEntity();
-            $entity->getNode();
 
-            $url = $this->s3client->getObjectUrl($entity->getNode(), $entity->getEntity(),
-                self::LINK_AVAILABILITY_TIMEOUT);
+            var_dump($entity);
 
-            if (preg_match('/./', $entity->getNode())) {
-                $url = str_replace($entity->getNode() . '/', '', $url);
-                $parsedUrl = parse_url($url);
-                $url = sprintf('%s://%s.%s%s?%s', $parsedUrl['scheme'], $entity->getNode(), $parsedUrl['host'],
-                    $parsedUrl['path'], $parsedUrl['query']);
-            }
 
-            $this->downloadResource->download($url, $entity);
-            $this->copyResource->copy($entity);
-            //TODO on success write to amazon sqs
+
         }
     }
 

@@ -46,9 +46,7 @@ class SqsSource implements EntitySource
             foreach ($result->getPath('Messages/*/Body') as $messageBody) {
                 $entities[] = $this->nameParser->retrieveEntityBean($messageBody);
             }
-        }
 
-        if ($result->getPath('Messages/*/ReceiptHandle')) {
             foreach ($result->getPath('Messages/*/ReceiptHandle') as $receiptHandle) {
                 $this->client->deleteMessage(array(
                     'QueueUrl' => $this->config['aws']['sqs.pool.url'],

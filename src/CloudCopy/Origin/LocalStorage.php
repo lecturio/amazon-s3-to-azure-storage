@@ -17,7 +17,6 @@ class LocalStorage implements EntitySource
     {
         $entities = array();
 
-        //TODO support relative and absolute configuration
         $filePath = sprintf('%s/%s', $this->config['local.sourcelist'], self::COPY_LIST);
         foreach (file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
             $entity = explode('/', $line);

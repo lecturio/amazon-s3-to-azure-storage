@@ -3,13 +3,16 @@ namespace CloudCopy;
 
 
 use Aws\S3\S3Client as client;
+use Aws\Sqs\SqsClient as awsSqsClient;
 use CloudCopy\AWS\DownloadResource;
 use CloudCopy\AWS\S3Client;
+use CloudCopy\AWS\SqsClient;
 use CloudCopy\Azure\BlobCopy;
 use CloudCopy\Azure\StorageClient;
-use CloudCopy\Origin\EntitySource;
 use CloudCopy\Origin\FileNameBean;
+use Symfony\Component\Console\Output\OutputInterface;
 use WindowsAzure\Blob\BlobRestProxy;
+
 
 class AmazonS3ToAzureStorage
 {
@@ -26,9 +29,10 @@ class AmazonS3ToAzureStorage
     private $storageClient;
 
     /**
-     * @var EntitySource
+     * @var awsSqsClient
      */
-    private $entitySource;
+    private $sqsClient;
+
     /**
      * @var DownloadResource
      */
@@ -41,25 +45,32 @@ class AmazonS3ToAzureStorage
 
     private $config;
 
+    private $entitiesForCopy;
+
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
     function __construct(
         S3Client $s3Client,
         StorageClient $storageClient,
-        EntitySource $entitySource,
         DownloadResource $downloadResource,
         BlobCopy $blobCopy,
+        SqsClient $sqsClient,
         $config
     ) {
         $this->s3client = $s3Client->factory();
         $this->storageClient = $storageClient->factory();
-        $this->entitySource = $entitySource;
         $this->downloadResource = $downloadResource;
         $this->copyResource = $blobCopy;
+        $this->sqsClient = $sqsClient->factory();
         $this->config = $config;
     }
 
     function execute()
     {
-        foreach ($this->entitySource->retrieve() as $entity) {
+        foreach ($this->entitiesForCopy as $entity) {
             /**
              * @var $entity FileNameBean
              */
@@ -76,9 +87,15 @@ class AmazonS3ToAzureStorage
                     $parsedUrl['path'], $parsedUrl['query']);
             }
 
-            $this->downloadResource->download($url, $entity);
-            $this->copyResource->copy($entity);
-            //TODO on success write to amazon sqs
+            try {
+                $this->downloadResource->download($url, $entity);
+                $this->copyResource->copy($entity);
+            } catch (\Exception $e) {
+                $this->sqsClient->sendMessage(array(
+                    'QueueUrl' => $this->config['aws']['sqs.pool.url'],
+                    'MessageBody' => sprintf('%s/%s', $entity->getNode(), $entity->getEntity()),
+                ));
+            }
         }
     }
 
@@ -88,5 +105,31 @@ class AmazonS3ToAzureStorage
     public function getS3client()
     {
         return $this->s3client;
+    }
+
+    /**
+     * @param mixed $entitiesForCopy
+     */
+    public function setEntitiesForCopy($entitiesForCopy)
+    {
+        $this->entitiesForCopy = $entitiesForCopy;
+    }
+
+    /**
+     * @param OutputInterface $output
+     */
+    public function setOutput($output)
+    {
+        $this->output = $output;
+    }
+
+    /**
+     * @return OutputInterface
+     */
+    private function writeln($message)
+    {
+        if ($this->output !== null) {
+            return $this->output->writeln($message);
+        }
     }
 }

@@ -18,9 +18,9 @@ $container->register('storageClient', 'CloudCopy\Azure\StorageClient')
 $container->register('amazonS3ToAzureStorage', 'CloudCopy\AmazonS3ToAzureStorage')
     ->addArgument(new Reference('s3client'))
     ->addArgument(new Reference('storageClient'))
-    ->addArgument(new Reference('sqsStorage'))
     ->addArgument(new Reference('awsResource'))
     ->addArgument(new Reference('blobCopy'))
+    ->addArgument(new Reference('sqsClient'))
     ->addArgument($config);
 
 $container->register('localStorage', 'CloudCopy\Origin\LocalStorage')

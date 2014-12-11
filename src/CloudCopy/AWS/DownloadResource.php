@@ -15,7 +15,9 @@ class DownloadResource
 
     public function download($url, FileNameBean $entity)
     {
-        $destination = sprintf('%s/%s', $this->config['temp.cloud.store'], $entity->getNode());
+        $folder = dirname(sprintf('%s/%s', $entity->getNode(), $entity->getEntity()));
+        $file = basename(sprintf('%s/%s', $entity->getNode(), $entity->getEntity()));
+        $destination = sprintf('%s/%s', $this->config['temp.cloud.store'], $folder);
 
         if (!file_exists($destination)) {
             mkdir($destination, 0777, true);
@@ -23,7 +25,7 @@ class DownloadResource
         }
 
         $ch = curl_init($url);
-        $fp = fopen(sprintf('%s/%s', $destination, $entity->getEntity()), 'wb');
+        $fp = fopen(sprintf('%s/%s', $destination, $file), 'wb');
 
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);

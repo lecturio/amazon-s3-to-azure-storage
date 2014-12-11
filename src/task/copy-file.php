@@ -45,6 +45,7 @@ class CopyFile extends Command
              * @var $sqsSource \CloudCopy\Origin\SqsSource
              */
             $s3ToAzure = $this->container->get('amazonS3ToAzureStorage');
+            $s3ToAzure->setOutput($output);
             $sqsSource = $this->container->get('sqsStorage');
 
             /**
@@ -52,7 +53,14 @@ class CopyFile extends Command
              */
 
             static $started;
+            $i = 0;
             while (true) {
+                ++$i;
+
+                if ($i % 101 == 0) {
+                    sleep(1);
+                }
+
                 $s3ToAzure->setEntitiesForCopy($sqsSource->retrieve());
                 if ($s3ToAzure->execute()) {
                     $sqsSource->cleanUp();

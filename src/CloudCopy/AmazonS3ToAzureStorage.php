@@ -93,13 +93,13 @@ class AmazonS3ToAzureStorage
                 $this->writeln(sprintf('Start copy %s %s', $entity->getNode(), $entity->getEntity()));
                 $this->copyResource->copy($entity);
                 $this->downloadResource->delete($entity);
+                $this->writeln(sprintf('Clean %s %s', $entity->getNode(), $entity->getEntity()));
             } catch (\Exception $e) {
                 $this->writeln($e->getMessage());
                 return false;
             }
         }
 
-        $this->writeln(sprintf('Clean %s %s', $entity->getNode(), $entity->getEntity()));
         return true;
     }
 

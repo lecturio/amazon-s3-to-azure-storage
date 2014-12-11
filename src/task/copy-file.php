@@ -61,13 +61,19 @@ class CopyFile extends Command
                     sleep(1);
                 }
 
-                $s3ToAzure->setEntitiesForCopy($sqsSource->retrieve());
-                if ($s3ToAzure->execute()) {
-                    $sqsSource->cleanUp();
+                $messages = $sqsSource->retrieve();
+                $messagesLength = count($messages);
+
+                if ($messagesLength > 0) {
+                    $started = null;
+
+                    $s3ToAzure->setEntitiesForCopy($messages);
+                    if ($s3ToAzure->execute()) {
+                        $sqsSource->cleanUp();
+                    }
                 }
 
-                if (count($sqsSource->retrieve()) == 0) {
-
+                if ($messagesLength == 0) {
                     if ($started === null) {
                         $started = time();
                     }

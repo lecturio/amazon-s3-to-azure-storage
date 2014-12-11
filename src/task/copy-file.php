@@ -42,28 +42,38 @@ class CopyFile extends Command
         if ($input->getOption(self::AMAZON_S3_TO_AZURE_STORAGE)) {
             /**
              * @var $s3ToAzure \CloudCopy\AmazonS3ToAzureStorage
+             * @var $sqsSource \CloudCopy\Origin\SqsSource
              */
             $s3ToAzure = $this->container->get('amazonS3ToAzureStorage');
-
-            //$s3ToAzure->execute();
+            $sqsSource = $this->container->get('sqsStorage');
 
             /**
              * @var $sqsSource \CloudCopy\Origin\SqsSource
              */
-            $started = microtime(true);
-//            while (true) {
-            $sqsSource = $this->container->get('sqsStorage');
-            //$s3ToAzure->setEntitiesForCopy($sqsSource->retrieve());
 
-            $sqsSource->retrieve();
-            //$s3ToAzure->execute();
-//                var_dump($sqsSource->retrieve());
-//
-//                if (time() > $started + 20 && count($sqsSource->retrieve()) == 0) {
-//                    break;
-//                }
-//            }
+            static $started;
+            while (true) {
+                $s3ToAzure->setEntitiesForCopy($sqsSource->retrieve());
+                if ($s3ToAzure->execute()) {
+                    $sqsSource->cleanUp();
+                }
+
+                if (count($sqsSource->retrieve()) == 0) {
+
+                    if ($started === null) {
+                        $started = time();
+                    }
+
+                    if (time() > $started + 60) {
+                        break;
+                    }
+                }
+            }
+
+
         }
+
+
     }
 }
 

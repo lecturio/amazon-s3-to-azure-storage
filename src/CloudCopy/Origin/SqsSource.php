@@ -24,6 +24,8 @@ class SqsSource implements EntitySource
      */
     private $nameParser;
 
+    private $result;
+
     function __construct(SqsClient $sqsClient, NameParser $nameParser, $config)
     {
         $this->client = $sqsClient->factory();
@@ -36,26 +38,30 @@ class SqsSource implements EntitySource
     {
         $entities = array();
 
-        $result = $this->client->receiveMessage(array(
+        $this->result = $this->client->receiveMessage(array(
             'QueueUrl' => $this->config['aws']['sqs.pool.url'],
             'WaitTimeSeconds' => 10,
-            'MaxNumberOfMessages' => 1
+            'MaxNumberOfMessages' => 1,
+            'VisibilityTimeout' => 3600
         ));
 
-        if ($result->getPath('Messages/*/Body')) {
-            foreach ($result->getPath('Messages/*/Body') as $messageBody) {
+        if ($this->result->getPath('Messages/*/Body')) {
+            foreach ($this->result->getPath('Messages/*/Body') as $messageBody) {
                 $entities[] = $this->nameParser->retrieveEntityBean($messageBody);
-            }
-
-            foreach ($result->getPath('Messages/*/ReceiptHandle') as $receiptHandle) {
-                $this->client->deleteMessage(array(
-                    'QueueUrl' => $this->config['aws']['sqs.pool.url'],
-                    'ReceiptHandle' => $receiptHandle
-                ));
             }
         }
 
         return $entities;
+    }
+
+    function cleanUp()
+    {
+        foreach ($this->result->getPath('Messages/*/ReceiptHandle') as $receiptHandle) {
+            $this->client->deleteMessage(array(
+                'QueueUrl' => $this->config['aws']['sqs.pool.url'],
+                'ReceiptHandle' => $receiptHandle
+            ));
+        }
     }
 
     /**

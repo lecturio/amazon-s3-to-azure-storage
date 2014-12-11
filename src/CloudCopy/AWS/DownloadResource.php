@@ -8,7 +8,7 @@ class DownloadResource
 {
     private $config;
 
-    public function __construct($config)
+    function __construct($config)
     {
         $this->config = $config;
     }
@@ -35,6 +35,13 @@ class DownloadResource
         curl_exec($ch);
         curl_close($ch);
         fclose($fp);
+    }
+
+    public function delete(FileNameBean $entity)
+    {
+        $destination = sprintf('%s/%s/%s', $this->config['temp.cloud.store'],
+            $entity->getNode(), $entity->getEntity());
+        unlink($destination);
     }
 
 }

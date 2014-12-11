@@ -13,7 +13,7 @@ class LocalStorage implements EntitySource
         $this->config = $config;
     }
 
-    function retrieve()
+    public function retrieve()
     {
         $entities = array();
 
@@ -29,6 +29,12 @@ class LocalStorage implements EntitySource
         }
 
         return $entities;
+    }
+
+
+    public function cleanUp()
+    {
+
     }
 
     /**

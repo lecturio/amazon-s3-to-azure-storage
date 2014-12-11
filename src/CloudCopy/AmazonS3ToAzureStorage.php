@@ -76,6 +76,7 @@ class AmazonS3ToAzureStorage
              */
             $entity->getEntity();
             $entity->getNode();
+            $this->writeln(sprintf('Start download %s %s', $entity->getNode(), $entity->getEntity()));
 
             $url = $this->s3client->getObjectUrl($entity->getNode(), $entity->getEntity(),
                 self::LINK_AVAILABILITY_TIMEOUT);
@@ -89,14 +90,17 @@ class AmazonS3ToAzureStorage
 
             try {
                 $this->downloadResource->download($url, $entity);
+                $this->writeln(sprintf('Start copy %s %s', $entity->getNode(), $entity->getEntity()));
                 $this->copyResource->copy($entity);
+                $this->downloadResource->delete($entity);
             } catch (\Exception $e) {
-                $this->sqsClient->sendMessage(array(
-                    'QueueUrl' => $this->config['aws']['sqs.pool.url'],
-                    'MessageBody' => sprintf('%s/%s', $entity->getNode(), $entity->getEntity()),
-                ));
+                $this->writeln($e->getMessage());
+                return false;
             }
         }
+
+        $this->writeln(sprintf('Clean %s %s', $entity->getNode(), $entity->getEntity()));
+        return true;
     }
 
     /**
@@ -128,7 +132,7 @@ class AmazonS3ToAzureStorage
      */
     private function writeln($message)
     {
-        if ($this->output !== null) {
+        if ($this->output !== null && $this->config['trace'] == true) {
             return $this->output->writeln($message);
         }
     }

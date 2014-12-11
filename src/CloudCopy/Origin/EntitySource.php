@@ -10,4 +10,6 @@ namespace CloudCopy\Origin;
 interface EntitySource
 {
     function retrieve();
+
+    function cleanUp();
 }

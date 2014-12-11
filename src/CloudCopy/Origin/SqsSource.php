@@ -56,11 +56,14 @@ class SqsSource implements EntitySource
 
     function cleanUp()
     {
-        foreach ($this->result->getPath('Messages/*/ReceiptHandle') as $receiptHandle) {
-            $this->client->deleteMessage(array(
-                'QueueUrl' => $this->config['aws']['sqs.pool.url'],
-                'ReceiptHandle' => $receiptHandle
-            ));
+        if ($this->result->getPath('Messages/*/ReceiptHandle')) {
+
+            foreach ($this->result->getPath('Messages/*/ReceiptHandle') as $receiptHandle) {
+                $this->client->deleteMessage(array(
+                    'QueueUrl' => $this->config['aws']['sqs.pool.url'],
+                    'ReceiptHandle' => $receiptHandle
+                ));
+            }
         }
     }
 

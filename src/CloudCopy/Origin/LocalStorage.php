@@ -4,9 +4,8 @@ namespace CloudCopy\Origin;
 
 class LocalStorage implements EntitySource
 {
-    private $config;
-
     const COPY_LIST = "copy-list.txt";
+    private $config;
 
     function __construct($config)
     {
@@ -33,6 +32,11 @@ class LocalStorage implements EntitySource
 
 
     public function cleanUp()
+    {
+
+    }
+
+    public function cleanFailed()
     {
 
     }

@@ -5,7 +5,6 @@ require_once __DIR__ . '../../../bootstrap.php';
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,12 +14,11 @@ use Symfony\Component\DependencyInjection\Container;
 class CopyFile extends Command
 {
 
+    const AMAZON_S3_TO_AZURE_STORAGE = 's3-azure';
     /**
      * @var Container
      */
     private $container;
-
-    const AMAZON_S3_TO_AZURE_STORAGE = 's3-azure';
 
     protected function configure()
     {
@@ -70,6 +68,8 @@ class CopyFile extends Command
                     $s3ToAzure->setEntitiesForCopy($messages);
                     if ($s3ToAzure->execute()) {
                         $sqsSource->cleanUp();
+                    } else {
+                        $sqsSource->cleanFailed();
                     }
                 }
 

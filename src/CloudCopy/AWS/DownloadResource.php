@@ -24,7 +24,12 @@ class DownloadResource
             chmod($destination, 0777);
         }
 
-        file_put_contents(sprintf('%s/%s', $destination, $file), fopen($url, 'r'));
+        $p = @fopen($url, 'r');
+        if ($p) {
+            file_put_contents(sprintf('%s/%s', $destination, $file), $p);
+        }
+
+        return $p;
     }
 
     public function delete(FileNameBean $entity)

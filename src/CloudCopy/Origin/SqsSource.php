@@ -34,7 +34,7 @@ class SqsSource implements EntitySource
         $this->config = $config;
     }
 
-    function retrieve()
+    public function retrieve()
     {
         $entities = array();
 
@@ -42,7 +42,8 @@ class SqsSource implements EntitySource
             'QueueUrl' => $this->config['aws']['sqs.pool.url'],
             'WaitTimeSeconds' => 10,
             'MaxNumberOfMessages' => 1,
-            'VisibilityTimeout' => 3600
+//            'VisibilityTimeout' => 3600
+            'AttributeNames' => array('ApproximateReceiveCount')
         ));
 
         if ($this->result->getPath('Messages/*/Body')) {
@@ -54,16 +55,32 @@ class SqsSource implements EntitySource
         return $entities;
     }
 
-    function cleanUp()
+    public function cleanFailed()
     {
-        if ($this->result->getPath('Messages/*/ReceiptHandle')) {
+        if (!$this->result->getPath('Messages/*/Attributes')) {
+            return;
+        }
 
-            foreach ($this->result->getPath('Messages/*/ReceiptHandle') as $receiptHandle) {
-                $this->client->deleteMessage(array(
-                    'QueueUrl' => $this->config['aws']['sqs.pool.url'],
-                    'ReceiptHandle' => $receiptHandle
-                ));
-            }
+        $attributes = $this->result->getPath('Messages/*/Attributes');
+
+        if (isset($attributes['ApproximateReceiveCount'])
+            && (int)$attributes['ApproximateReceiveCount'] > (int)$this->config['retries']
+        ) {
+            $this->cleanUp();
+        }
+    }
+
+    public function cleanUp()
+    {
+        if (!$this->result->getPath('Messages/*/ReceiptHandle')) {
+            return;
+        }
+
+        foreach ($this->result->getPath('Messages/*/ReceiptHandle') as $receiptHandle) {
+            $this->client->deleteMessage(array(
+                'QueueUrl' => $this->config['aws']['sqs.pool.url'],
+                'ReceiptHandle' => $receiptHandle
+            ));
         }
     }
 

@@ -16,7 +16,7 @@ use WindowsAzure\Blob\BlobRestProxy;
 
 class AmazonS3ToAzureStorage
 {
-    const LINK_AVAILABILITY_TIMEOUT = '5 minutes';
+    const LINK_AVAILABILITY_TIMEOUT = '20 minutes';
 
     /**
      * @var client
@@ -88,8 +88,12 @@ class AmazonS3ToAzureStorage
                     $parsedUrl['path'], $parsedUrl['query']);
             }
 
+            if ($this->downloadResource->download($url, $entity) == false) {
+                $this->writeln(sprintf('Missing %s %s', $entity->getNode(), $entity->getEntity()));
+                return false;
+            }
+
             try {
-                $this->downloadResource->download($url, $entity);
                 $this->writeln(sprintf('Start copy %s %s', $entity->getNode(), $entity->getEntity()));
                 $this->copyResource->copy($entity);
                 $this->downloadResource->delete($entity);
@@ -101,6 +105,16 @@ class AmazonS3ToAzureStorage
         }
 
         return true;
+    }
+
+    /**
+     * @return OutputInterface
+     */
+    private function writeln($message)
+    {
+        if ($this->output !== null && $this->config['trace'] == true) {
+            return $this->output->writeln($message);
+        }
     }
 
     /**
@@ -125,15 +139,5 @@ class AmazonS3ToAzureStorage
     public function setOutput($output)
     {
         $this->output = $output;
-    }
-
-    /**
-     * @return OutputInterface
-     */
-    private function writeln($message)
-    {
-        if ($this->output !== null && $this->config['trace'] == true) {
-            return $this->output->writeln($message);
-        }
     }
 }

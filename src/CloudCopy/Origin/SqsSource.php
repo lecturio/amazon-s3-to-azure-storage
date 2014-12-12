@@ -42,7 +42,7 @@ class SqsSource implements EntitySource
             'QueueUrl' => $this->config['aws']['sqs.pool.url'],
             'WaitTimeSeconds' => 10,
             'MaxNumberOfMessages' => 1,
-//            'VisibilityTimeout' => 3600
+            'VisibilityTimeout' => 3600,
             'AttributeNames' => array('ApproximateReceiveCount')
         ));
 

@@ -24,19 +24,7 @@ class DownloadResource
             chmod($destination, 0777);
         }
 
-        $ch = curl_init($url);
-        $fp = fopen(sprintf('%s/%s', $destination, $file), 'wb');
-
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-
-        if (preg_match('/./', $entity->getNode())) {
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
-        }
-
-        curl_exec($ch);
-        curl_close($ch);
-        fclose($fp);
+        file_put_contents(sprintf('%s/%s', $destination, $file), fopen($url, 'r'));
     }
 
     public function delete(FileNameBean $entity)

@@ -100,6 +100,7 @@ class AmazonS3ToAzureStorage
                 $this->writeln(sprintf('Clean %s %s', $entity->getNode(), $entity->getEntity()));
             } catch (\Exception $e) {
                 $this->writeln($e->getMessage());
+                $this->downloadResource->delete($entity);
                 return false;
             }
         }

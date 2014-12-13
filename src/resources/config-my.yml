@@ -5,7 +5,6 @@ aws:
   sqs.pool.url:
   sqs.push.url:
 
-
 azure:
   storage.key: ""
   storage.account:
@@ -16,3 +15,6 @@ backups:
 
 local.sourcelist: fullpath/sourcelist
 temp.cloud.store: fullpath/assets
+
+trace: true
+retries: 5

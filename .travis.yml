@@ -3,6 +3,6 @@ php:
   - 5.3
 
 install: composer install
-scprit: phpunit -c testsuite.xml
+script: phpunit -c testsuite.xml
 
 

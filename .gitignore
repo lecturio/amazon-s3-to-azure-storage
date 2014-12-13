@@ -7,3 +7,4 @@ vendor
 assets
 src/resources/config.yml
 sourcelist/copy-list.txt
+*.DS_Store

@@ -1,13 +1,13 @@
 aws:
-  access.key:
-  secret.key:
+  access.key: AWS_KEY
+  secret.key: AWS_SECRET
   sqs.region: sqs.eu-west-1.amazonaws.com
-  sqs.pool.url:
-  sqs.push.url:
+  sqs.pool.url: QUEUE_URL
+  sqs.push.url: QUEUE_URL
 
 azure:
-  storage.key: ""
-  storage.account:
+  storage.key: "U1RPUkFHRV9LRVk="
+  storage.account: STORAGE_ACCOUNT
 
 backups:
   aws.to.azure:

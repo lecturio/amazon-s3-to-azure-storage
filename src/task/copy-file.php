@@ -38,6 +38,16 @@ class CopyFile extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption(self::AMAZON_S3_TO_AZURE_STORAGE)) {
+
+            $resource = $this->container->get('configResource')->locate('config.yml', null, false);
+            $config = $this->container->get('ymlParser')->parse(file_get_contents($resource[0]));
+            foreach (glob($config['temp.cloud.store'] . '/*') as $node) {
+                if (is_dir($node)) {
+                    exec('rm -rf ' . $node);
+                }
+            }
+
+
             /**
              * @var $s3ToAzure \CloudCopy\AmazonS3ToAzureStorage
              * @var $sqsSource \CloudCopy\Origin\SqsSource
@@ -78,13 +88,11 @@ class CopyFile extends Command
                         $started = time();
                     }
 
-                    if (time() > $started + 60) {
+                    if (time() > $started + 5400) {
                         break;
                     }
                 }
             }
-
-
         }
 
 

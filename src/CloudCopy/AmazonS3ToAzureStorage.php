@@ -99,7 +99,7 @@ class AmazonS3ToAzureStorage
                 $this->downloadResource->delete($entity);
                 $this->writeln(sprintf('Clean %s %s', $entity->getNode(), $entity->getEntity()));
             } catch (\Exception $e) {
-                $this->writeln($e->getMessage());
+                $this->writeError($e->getMessage());
                 $this->downloadResource->delete($entity);
                 return false;
             }
@@ -115,6 +115,14 @@ class AmazonS3ToAzureStorage
     {
         if ($this->output !== null && $this->config['trace'] == true) {
             return $this->output->writeln($message);
+        }
+    }
+
+    private function writeError($message)
+    {
+        if ($this->output !== null) {
+            return $this->output->writeln($message);
+
         }
     }
 

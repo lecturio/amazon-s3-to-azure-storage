@@ -15,6 +15,7 @@ class CopyFile extends Command
 {
 
     const AMAZON_S3_TO_AZURE_STORAGE = 's3-azure';
+    const CLEANUP = 'cleanup';
     /**
      * @var Container
      */
@@ -30,6 +31,12 @@ class CopyFile extends Command
                 InputOption::VALUE_NONE,
                 'Copy files from Amazon s3 to Azure Storage'
             )
+            ->addOption(
+                self::CLEANUP,
+                null,
+                InputOption::VALUE_NONE,
+                'Clean temp files from previous run'
+            )
             ->setDescription('copy files across cloud services');
 
         $this->container = $GLOBALS['container'];
@@ -37,8 +44,7 @@ class CopyFile extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($input->getOption(self::AMAZON_S3_TO_AZURE_STORAGE)) {
-
+        if ($input->getOption(self::CLEANUP)) {
             $resource = $this->container->get('configResource')->locate('config.yml', null, false);
             $config = $this->container->get('ymlParser')->parse(file_get_contents($resource[0]));
             foreach (glob($config['temp.cloud.store'] . '/*') as $node) {
@@ -46,8 +52,9 @@ class CopyFile extends Command
                     exec('rm -rf ' . $node);
                 }
             }
+        }
 
-
+        if ($input->getOption(self::AMAZON_S3_TO_AZURE_STORAGE)) {
             /**
              * @var $s3ToAzure \CloudCopy\AmazonS3ToAzureStorage
              * @var $sqsSource \CloudCopy\Origin\SqsSource
@@ -94,7 +101,6 @@ class CopyFile extends Command
                 }
             }
         }
-
 
     }
 }

@@ -20,7 +20,7 @@ class DownloadResource
         $destination = sprintf('%s/%s', $this->config['temp.cloud.store'], $folder);
 
         if (!file_exists($destination)) {
-            mkdir($destination, 0777, true);
+            @mkdir($destination, 0777, true);
             chmod($destination, 0777);
         }
 

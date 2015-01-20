@@ -16,6 +16,7 @@ class CopyFile extends Command
 
     const AMAZON_S3_TO_AZURE_STORAGE = 's3-azure';
     const CLEANUP = 'cleanup';
+    const RENAME_S3_BUCKET = 'rename-s3';
     /**
      * @var Container
      */
@@ -37,6 +38,12 @@ class CopyFile extends Command
                 InputOption::VALUE_NONE,
                 'Clean temp files from previous run'
             )
+            ->addOption(
+                self::RENAME_S3_BUCKET,
+                null,
+                InputOption::VALUE_NONE,
+                'Rename s3 bucket to new bucket'
+            )
             ->setDescription('copy files across cloud services');
 
         $this->container = $GLOBALS['container'];
@@ -55,17 +62,17 @@ class CopyFile extends Command
         }
 
         if ($input->getOption(self::AMAZON_S3_TO_AZURE_STORAGE)) {
-            /**
-             * @var $s3ToAzure \CloudCopy\AmazonS3ToAzureStorage
-             * @var $sqsSource \CloudCopy\Origin\SqsSource
-             */
-            $s3ToAzure = $this->container->get('amazonS3ToAzureStorage');
-            $s3ToAzure->setOutput($output);
-            $sqsSource = $this->container->get('sqsStorage');
+            $this->amazonToAzure($input, $output);
+        }
 
+        if ($input->getOption(self::RENAME_S3_BUCKET)) {
             /**
+             * @var $renameS3Bucket \CloudCopy\renameS3Bucket
              * @var $sqsSource \CloudCopy\Origin\SqsSource
              */
+            $renameS3Bucket = $this->container->get('renameS3Bucket');
+            $renameS3Bucket->setOutput($output);
+            $sqsSource = $this->container->get('sqsStorage');
 
             static $started;
             $i = 0;
@@ -74,6 +81,7 @@ class CopyFile extends Command
 
                 if ($i % 101 == 0) {
                     sleep(1);
+                    $i = 0;
                 }
 
                 $messages = $sqsSource->retrieve();
@@ -82,8 +90,8 @@ class CopyFile extends Command
                 if ($messagesLength > 0) {
                     $started = null;
 
-                    $s3ToAzure->setEntitiesForCopy($messages);
-                    if ($s3ToAzure->execute()) {
+                    $renameS3Bucket->setEntitiesForCopy($messages);
+                    if ($renameS3Bucket->execute()) {
                         $sqsSource->cleanUp();
                     } else {
                         $sqsSource->cleanFailed();
@@ -101,8 +109,57 @@ class CopyFile extends Command
                 }
             }
         }
-
     }
+
+    private function amazonToAzure(InputInterface $input, OutputInterface $output)
+    {
+        /**
+         * @var $s3ToAzure \CloudCopy\AmazonS3ToAzureStorage
+         * @var $sqsSource \CloudCopy\Origin\SqsSource
+         */
+        $s3ToAzure = $this->container->get('amazonS3ToAzureStorage');
+        $s3ToAzure->setOutput($output);
+        $sqsSource = $this->container->get('sqsStorage');
+
+        /**
+         * @var $sqsSource \CloudCopy\Origin\SqsSource
+         */
+
+        static $started;
+        $i = 0;
+        while (true) {
+            ++$i;
+
+            if ($i % 101 == 0) {
+                sleep(1);
+            }
+
+            $messages = $sqsSource->retrieve();
+            $messagesLength = count($messages);
+
+            if ($messagesLength > 0) {
+                $started = null;
+
+                $s3ToAzure->setEntitiesForCopy($messages);
+                if ($s3ToAzure->execute()) {
+                    $sqsSource->cleanUp();
+                } else {
+                    $sqsSource->cleanFailed();
+                }
+            }
+
+            if ($messagesLength == 0) {
+                if ($started === null) {
+                    $started = time();
+                }
+
+                if (time() > $started + 5400) {
+                    break;
+                }
+            }
+        }
+    }
+
 }
 
 $application = new Application();

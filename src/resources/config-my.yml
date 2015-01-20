@@ -18,3 +18,12 @@ temp.cloud.store: fullpath/assets
 
 trace: true
 retries: 5
+
+rename:
+  s3:
+    bucket:
+      access.key: AWS_KEY
+        secret.key: AWS_SECRET
+        sqs.region: sqs.eu-west-1.amazonaws.com
+        sqs.pool.url: QUEUE_URL
+        sqs.push.url: QUEUE_URL

@@ -8,6 +8,9 @@ $container->register('ymlParser', 'Symfony\Component\Yaml\Parser');
 
 $resource = $container->get('configResource')->locate('config.yml', null, false);
 $config = $container->get('ymlParser')->parse(file_get_contents($resource[0]));
+$container->register('configuration', 'CloudCopy\Configuration')
+    ->addArgument($config);
+
 $container->register('s3client', 'CloudCopy\AWS\S3Client')
     ->addArgument($config);
 $container->register('sqsClient', 'CloudCopy\AWS\SqsClient')
@@ -37,5 +40,12 @@ $container->register('blobCopy', 'CloudCopy\Azure\BlobCopy')
     ->addArgument($config);
 
 $container->register('originResourceParser', '\CloudCopy\Origin\Resource\NameParser');
+
+$container->register('renameS3Bucket', 'CloudCopy\RenameS3Bucket')
+    ->addArgument(new Reference('s3client'))
+    ->addArgument(new Reference('storageClient'))
+    ->addArgument(new Reference('awsResource'))
+    ->addArgument(new Reference('sqsClient'))
+    ->addArgument($config);
 
 $container->compile();

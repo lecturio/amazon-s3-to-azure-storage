@@ -45,6 +45,9 @@ class AmazonS3ToAzureStorage
 
     private $config;
 
+    /**
+     * @var array FileNameBean
+     */
     private $entitiesForCopy;
 
     /**

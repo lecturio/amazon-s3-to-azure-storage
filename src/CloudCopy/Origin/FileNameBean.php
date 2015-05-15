@@ -15,6 +15,15 @@ class FileNameBean
      * @var string
      */
     private $node;
+    /**
+     * @var string
+     */
+    private $entity;
+
+    /**
+     * @var int
+     */
+    private $bitRate;
 
     /**
      * @return string
@@ -49,8 +58,19 @@ class FileNameBean
     }
 
     /**
-     * @var string
+     * @return int
      */
-    private $entity;
+    public function getBitRate()
+    {
+        return $this->bitRate;
+    }
+
+    /**
+     * @param int $bitRate
+     */
+    public function setBitRate($bitRate)
+    {
+        $this->bitRate = $bitRate;
+    }
 
 }

@@ -12,6 +12,8 @@ azure:
 backups:
   aws.to.azure:
     amazon-bucket: azure-container
+  aws.to.ftp:
+      streaming.lecturio: "ftp://username:password@ftp.host/path"
 
 local.sourcelist: fullpath/sourcelist
 temp.cloud.store: fullpath/assets

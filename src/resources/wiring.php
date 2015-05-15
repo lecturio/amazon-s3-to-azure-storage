@@ -25,6 +25,12 @@ $container->register('amazonS3ToAzureStorage', 'CloudCopy\AmazonS3ToAzureStorage
     ->addArgument(new Reference('blobCopy'))
     ->addArgument(new Reference('sqsClient'))
     ->addArgument($config);
+$container->register('amazonS3ToFtpStorage', 'CloudCopy\AmazonS3ToFtpStorage')
+    ->addArgument(new Reference('s3client'))
+    ->addArgument(new Reference('awsResource'))
+    ->addArgument(new Reference('ftpCopy'))
+    ->addArgument(new Reference('sqsClient'))
+    ->addArgument($config);
 
 $container->register('localStorage', 'CloudCopy\Origin\LocalStorage')
     ->addArgument($config);
@@ -37,6 +43,9 @@ $container->register('awsResource', 'CloudCopy\AWS\DownloadResource')
     ->addArgument($config);
 $container->register('blobCopy', 'CloudCopy\Azure\BlobCopy')
     ->addArgument(new Reference('storageClient'))
+    ->addArgument($config);
+
+$container->register('ftpCopy', 'CloudCopy\Ftp\BlobCopy')
     ->addArgument($config);
 
 $container->register('originResourceParser', '\CloudCopy\Origin\Resource\NameParser');

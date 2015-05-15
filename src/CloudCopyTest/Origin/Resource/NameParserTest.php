@@ -31,4 +31,16 @@ class NameParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('bucket.name', $fileName->getNode());
         $this->assertEquals('local.path/file.name', $fileName->getEntity());
     }
+
+    function testWithJsonEntityObject()
+    {
+        $parser = new NameParser();
+        /**
+         * @var $fileName FileNameBean
+         */
+
+        $fileName = $parser->retrieveEntityBean('bucket.name/{"entity": "file.name", "bitrate": 1000}');
+        $this->assertEquals('bucket.name', $fileName->getNode());
+        $this->assertEquals('{"entity": "file.name", "bitrate": 1000}', $fileName->getEntity());
+    }
 }

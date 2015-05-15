@@ -15,6 +15,7 @@ class CopyFile extends Command
 {
 
     const AMAZON_S3_TO_AZURE_STORAGE = 's3-azure';
+    const AMAZON_S3_TO_FTP = 's3-ftp';
     const CLEANUP = 'cleanup';
     const RENAME_S3_BUCKET = 'rename-s3';
     /**
@@ -31,6 +32,12 @@ class CopyFile extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Copy files from Amazon s3 to Azure Storage'
+            )
+            ->addOption(
+                self::AMAZON_S3_TO_FTP,
+                null,
+                InputOption::VALUE_NONE,
+                'Copy files from Amazon s3 to Ftp Storage'
             )
             ->addOption(
                 self::CLEANUP,
@@ -63,6 +70,10 @@ class CopyFile extends Command
 
         if ($input->getOption(self::AMAZON_S3_TO_AZURE_STORAGE)) {
             $this->amazonToAzure($input, $output);
+        }
+
+        if ($input->getOption(self::AMAZON_S3_TO_FTP)) {
+            $this->amazonToFtp($input, $output);
         }
 
         if ($input->getOption(self::RENAME_S3_BUCKET)) {
@@ -118,6 +129,55 @@ class CopyFile extends Command
          * @var $sqsSource \CloudCopy\Origin\SqsSource
          */
         $s3ToAzure = $this->container->get('amazonS3ToAzureStorage');
+        $s3ToAzure->setOutput($output);
+        $sqsSource = $this->container->get('sqsStorage');
+
+        /**
+         * @var $sqsSource \CloudCopy\Origin\SqsSource
+         */
+
+        static $started;
+        $i = 0;
+        while (true) {
+            ++$i;
+
+            if ($i % 101 == 0) {
+                sleep(1);
+            }
+
+            $messages = $sqsSource->retrieve();
+            $messagesLength = count($messages);
+
+            if ($messagesLength > 0) {
+                $started = null;
+
+                $s3ToAzure->setEntitiesForCopy($messages);
+                if ($s3ToAzure->execute()) {
+                    $sqsSource->cleanUp();
+                } else {
+                    $sqsSource->cleanFailed();
+                }
+            }
+
+            if ($messagesLength == 0) {
+                if ($started === null) {
+                    $started = time();
+                }
+
+                if (time() > $started + 5400) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private function amazonToFtp($input, $output)
+    {
+        /**
+         * @var $s3ToAzure \CloudCopy\AmazonS3ToFtpStorage
+         * @var $sqsSource \CloudCopy\Origin\SqsSource
+         */
+        $s3ToAzure = $this->container->get('amazonS3ToFtpStorage');
         $s3ToAzure->setOutput($output);
         $sqsSource = $this->container->get('sqsStorage');
 

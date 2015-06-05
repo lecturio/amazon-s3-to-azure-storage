@@ -25,8 +25,10 @@ class BlobCopy
         $destination = sprintf('%s/%s', $this->config['temp.cloud.store'], $entity->getNode());
         $content = fopen(sprintf('%s/%s', $destination, $entity->getEntity()), 'r');
 
-        $container = $this->config['backups']['aws.to.azure'][$entity->getNode()];
-        $this->client->createBlockBlob($container, $entity->getEntity(), $content);
+        if (isset($this->config['backups']['aws.to.azure'][$entity->getNode()])) {
+            $container = $this->config['backups']['aws.to.azure'][$entity->getNode()];
+            $this->client->createBlockBlob($container, $entity->getEntity(), $content);
+        }
     }
 
     /**
